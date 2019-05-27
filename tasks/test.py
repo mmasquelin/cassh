@@ -88,5 +88,5 @@ def e2e(ctx):
     End to End tests of CASSH-server and CASSH cli
     """
     ctx.run("""
-    ./tests/tests.sh
+    ./src/tests/tests.sh
     """, pty=True)

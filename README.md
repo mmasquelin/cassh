@@ -21,6 +21,7 @@ https://medium.com/leboncoin-engineering-blog/cassh-ssh-key-signing-tool-39fd3b8
   - [Usage](#usage)
     - [User](#user)
     - [Admin](#admin)
+    - [Configuration file](#configuration-file)
 - [Install](#install)
   - [Server](#server)
     - [Install](#install-1)
@@ -293,7 +294,7 @@ Put in your Shell rc file `alias cassh="PATH_TO/contrib/cassh_docker.sh"`
 
 #### Config
 
-Sample available at [./src/client/cassh-client.conf](./src/client/cassh-client.conf)
+Sample available at [src/client/cassh-client.conf](src/client/cassh-client.conf)
 
 
 
@@ -339,15 +340,18 @@ If installed and run locally:
 Start the server and its dependencies:
 
 ```
-$ cd tests/
+$ cd src/tests/
 $ docker-compose up cassh-server
+
+Starting tests_db_1 ... done
+Starting tests_cassh-server_1 ... done
 ```
 
 
 In an other shell, submit `cassh` CLI commands:
 
 ```
-$ cd tests/
+$ cd src/tests/
 $ docker-compose run cassh-cli
 
 Starting tests_db_1 ... done
@@ -374,7 +378,7 @@ optional arguments:
 ### Automated tasks
 
 Some redondent tasks are automated using `invoke`.
-They are defined in the [`tasks/`](./tasks/) directory.
+They are defined in the [`tasks/`](tasks/) directory.
 
 ```bash
 $ invoke -l
@@ -398,6 +402,8 @@ Available tasks:
 ```bash
 $ invoke test.e2e
 ```
+
+More details in the [doc](src/tests/README.md)
 
 
 ### CI
