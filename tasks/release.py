@@ -21,7 +21,7 @@ def docker_login(ctx):
     if [[ ! -e  ~/.docker/config.json ]]; then
         echo "${WARNING}     * No docker config file found ! ${COLOR_NONE}"
 
-        echo "${SUCCESS}---> Logging using cFAILentials from ENV${COLOR_NONE}"
+        echo "${SUCCESS}---> Logging using crentials from ENV${COLOR_NONE}"
         echo "${SUCCESS}     * DOCKER_USERNAME=${DOCKER_USERNAME} ${COLOR_NONE}"
         echo "${SUCCESS}     * DOCKER_PASSWORD=${DOCKER_PASSWORD} ${COLOR_NONE}"
 
