@@ -14,7 +14,7 @@ from urllib.parse import unquote_plus
 from configparser import ConfigParser, NoOptionError
 from ldap import initialize, SCOPE_SUBTREE
 from web import application, config, data, httpserver
-from web.wsgiserver import CherryPyWSGIServer
+# from web.wsgiserver import CherryPyWSGIServer
 
 # Own library
 from ssh_utils import get_fingerprint
