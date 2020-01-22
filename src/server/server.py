@@ -14,7 +14,8 @@ from urllib.parse import unquote_plus
 from configparser import ConfigParser, NoOptionError
 from ldap import initialize, SCOPE_SUBTREE
 from web import application, config, data, httpserver
-# from web.wsgiserver import CherryPyWSGIServer
+from cheroot.server import HTTPServer
+from cheroot.ssl.builtin import BuiltinSSLAdapter
 
 # Own library
 from ssh_utils import get_fingerprint
@@ -670,8 +671,9 @@ class MyApplication(application):
 
 if __name__ == "__main__":
     if SERVER_OPTS['ssl']:
-        CherryPyWSGIServer.ssl_certificate = SERVER_OPTS['ssl_public_key']
-        CherryPyWSGIServer.ssl_private_key = SERVER_OPTS['ssl_private_key']
+        HTTPServer.ssl_adapter = BuiltinSSLAdapter(
+            certificate=SERVER_OPTS['ssl_public_key'],
+            private_key=SERVER_OPTS['ssl_private_key'])
     if ARGS.verbose:
         print('SSL: %s' % SERVER_OPTS['ssl'])
         print('LDAP: %s' % SERVER_OPTS['ldap'])
