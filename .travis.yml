@@ -53,7 +53,7 @@ branches:
 #
 install:
   - echo "---> Check Docker version" && docker version
-  - echo "---> Installing CI utils" && sudo pip install docker-compose invoke
+  - echo "---> Installing CI utils" && sudo pip install -U docker-compose invoke pyOpenSSL
 
 before_script:
   - invoke release.docker-login
