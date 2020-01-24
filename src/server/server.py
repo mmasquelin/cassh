@@ -1,8 +1,13 @@
 #!/usr/bin/env python
-
 """
 Sign a user's SSH public key.
+
+Copyright 2017 Nicolas BEGUIER
+Licensed under the Apache License, Version 2.0
+Written by Nicolas BEGUIER (nicolas_beguier@hotmail.com)
+
 """
+
 from argparse import ArgumentParser
 from json import dumps
 from os import remove
@@ -42,7 +47,7 @@ URLS = (
     '/test_auth', 'TestAuth',
 )
 
-VERSION = '1.9.2'
+VERSION = '1.10.0'
 
 PARSER = ArgumentParser()
 PARSER.add_argument('-c', '--config', action='store', help='Configuration file')
