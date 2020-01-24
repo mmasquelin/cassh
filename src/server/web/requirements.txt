@@ -4,4 +4,3 @@ pyopenssl>=19.1.0
 pyyaml>=5.3
 requests>=2.22.0
 waitress>=1.4.2
-Werkzeug>=0.16.0
