@@ -26,6 +26,9 @@ from cheroot.ssl.builtin import BuiltinSSLAdapter
 from ssh_utils import get_fingerprint
 from tools import get_principals, get_pubkey, random_string, response_render, timestamp, unquote_custom, Tools
 
+import re
+
+
 # DEBUG
 # from pdb import set_trace as st
 
@@ -85,9 +88,12 @@ if CONFIG.has_section('postgres'):
 if CONFIG.has_section('ldap'):
     try:
         SERVER_OPTS['ldap'] = True
-        SERVER_OPTS['ldap_host'] = CONFIG.get('ldap', 'host')
+        SERVER_OPTS['ldap_base_dn'] = CONFIG.get('ldap', 'base_dn')
+        SERVER_OPTS['ldap_port'] = CONFIG.has_option('ldap','port') and CONFIG.get('ldap', 'port') or None
         SERVER_OPTS['ldap_bind_dn'] = CONFIG.get('ldap', 'bind_dn')
         SERVER_OPTS['ldap_admin_cn'] = CONFIG.get('ldap', 'admin_cn')
+        SERVER_OPTS['ldap_host'] = CONFIG.get('ldap', 'host')
+        SERVER_OPTS['ldap_member_field_filter'] = CONFIG.has_option('ldap','ldap_member_field_filter') and CONFIG.get('ldap', 'ldap_member_field_filter') or None
         SERVER_OPTS['ldap_port'] = CONFIG.has_option('ldap','port') and CONFIG.get('ldap', 'port') or None
         SERVER_OPTS['ldap_proto'] = CONFIG.has_option('ldap','proto') and CONFIG.get('ldap', 'proto') or 'ldap'
         SERVER_OPTS['ldap_type'] = CONFIG.has_option('ldap','type') and CONFIG.get('ldap', 'type') or 'ad'
@@ -175,17 +181,29 @@ def ldap_authentification(admin=False):
         if not SERVER_OPTS['verify_cert']:
             ldap_conn.set_option(ldap.OPT_REFERRALS, 0)
         try:
-            ldap_conn.bind_s(realname, password)
+            if SERVER_OPTS['ldap_type'] == 'openldap' and SERVER_OPTS['ldap_base_dn'] is not None:
+                ldap_conn.bind_s("uid=" + re.sub(r'\s*@.*', '', realname) + "," + SERVER_OPTS['ldap_base_dn'], password)
+            else:
+                ldap_conn.bind_s(realname, password)
         except Exception as e:
             return False, 'Error: %s' % e
         if admin:
-            memberof_admin_list = ldap_conn.search_s(
-                SERVER_OPTS['ldap_bind_dn'],
-                SCOPE_SUBTREE,
-                filterstr='(&(%s=%s)(memberOf=%s))' % (
-                    SERVER_OPTS['filterstr'],
-                    realname,
-                    SERVER_OPTS['ldap_admin_cn']))
+            if SERVER_OPTS['ldap_member_field_filter'] is not None and SERVER_OPTS['ldap_type'] == 'openldap':
+                memberof_admin_list = ldap_conn.search_s(
+                    SERVER_OPTS['ldap_base_dn'],
+                    SCOPE_SUBTREE,
+                    filterstr='(&(%s=%s)(%s))' % (
+                        SERVER_OPTS['filterstr'],
+                        re.sub(r'\s*@.*', '', realname),
+                        SERVER_OPTS['ldap_member_field_filter']))
+            else:
+                memberof_admin_list = ldap_conn.search_s(
+                    SERVER_OPTS['ldap_bind_dn'],
+                    SCOPE_SUBTREE,
+                    filterstr='(&(%s=%s)(memberOf=%s))' % (
+                        SERVER_OPTS['filterstr'],
+                        realname,
+                        SERVER_OPTS['ldap_admin_cn']))
             if not memberof_admin_list:
                 return False, 'Error: user %s is not an admin.' % realname
     return True, 'OK'
