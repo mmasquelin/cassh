@@ -88,7 +88,11 @@ if CONFIG.has_section('ldap'):
         SERVER_OPTS['ldap_host'] = CONFIG.get('ldap', 'host')
         SERVER_OPTS['ldap_bind_dn'] = CONFIG.get('ldap', 'bind_dn')
         SERVER_OPTS['ldap_admin_cn'] = CONFIG.get('ldap', 'admin_cn')
+        SERVER_OPTS['ldap_port'] = CONFIG.has_option('ldap','port') and CONFIG.get('ldap', 'port') or None
+        SERVER_OPTS['ldap_proto'] = CONFIG.has_option('ldap','proto') and CONFIG.get('ldap', 'proto') or 'ldap'
+        SERVER_OPTS['ldap_type'] = CONFIG.has_option('ldap','type') and CONFIG.get('ldap', 'type') or 'ad'
         SERVER_OPTS['filterstr'] = CONFIG.get('ldap', 'filterstr')
+        SERVER_OPTS['verify_cert'] = CONFIG.has_option('ldap','verify_cert') and CONFIG.get('ldap', 'verify_cert') or bool(False)
     except NoOptionError:
         if ARGS.verbose:
             print('Option reading error (ldap).')
@@ -157,7 +161,19 @@ def ldap_authentification(admin=False):
             return False, 'Error: No password option given.'
         if password == '':
             return False, 'Error: password is empty.'
-        ldap_conn = initialize("ldap://"+SERVER_OPTS['ldap_host'])
+        if SERVER_OPTS['ldap_proto']:
+            ldap_proto = SERVER_OPTS['ldap_proto'] + '://'
+        else:
+            ldap_proto = 'ldap://'
+        if SERVER_OPTS['ldap_port'] is not None:
+            ldap_uri = ldap_proto+""+SERVER_OPTS['ldap_host']+":"+SERVER_OPTS['ldap_port']+"/"
+        else:
+            ldap_uri = ldap_proto+""+SERVER_OPTS['ldap_host']+"/"
+        if not SERVER_OPTS['verify_cert']:
+            ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+        ldap_conn = initialize(ldap_uri)
+        if not SERVER_OPTS['verify_cert']:
+            ldap_conn.set_option(ldap.OPT_REFERRALS, 0)
         try:
             ldap_conn.bind_s(realname, password)
         except Exception as e:
