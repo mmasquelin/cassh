@@ -110,7 +110,12 @@ def login(current_user=None):
     response = APP.make_response(redirect_to_index)
     try:
         payload = {}
-        payload.update({'realname': username, 'password': password})
+        realname_re = re.compile(
+            r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*"  # dot-atom
+            r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-011\013\014\016-\177])*"' # quoted-string
+            r')@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?$', re.IGNORECASE)  # domain
+        if realname_re.search(username):
+            payload.update({'realname': username, 'password': password})
         req = post(APP.config['CASSH_URL'] + '/test_auth', \
                 data=payload, \
                 headers=APP.config['HEADERS'], \
