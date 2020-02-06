@@ -24,6 +24,9 @@ from requests import post, put
 from requests.exceptions import ConnectionError
 from urllib3 import disable_warnings
 
+import re
+
+
 # Disable HTTPs warnings
 disable_warnings()
 

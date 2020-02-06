@@ -97,6 +97,7 @@ if CONFIG.has_section('ldap'):
         SERVER_OPTS['ldap_port'] = CONFIG.has_option('ldap','port') and CONFIG.get('ldap', 'port') or None
         SERVER_OPTS['ldap_proto'] = CONFIG.has_option('ldap','proto') and CONFIG.get('ldap', 'proto') or 'ldap'
         SERVER_OPTS['ldap_type'] = CONFIG.has_option('ldap','type') and CONFIG.get('ldap', 'type') or 'ad'
+        SERVER_OPTS['ldap_user_dn'] = CONFIG.has_option('ldap','user_dn') and CONFIG.get('ldap', 'user_dn') or ('ou=Users' + SERVER_OPTS['ldap_base_dn'])
         SERVER_OPTS['filterstr'] = CONFIG.get('ldap', 'filterstr')
         SERVER_OPTS['verify_cert'] = CONFIG.has_option('ldap','verify_cert') and CONFIG.get('ldap', 'verify_cert') or bool(False)
     except NoOptionError:
@@ -181,8 +182,8 @@ def ldap_authentification(admin=False):
         if not SERVER_OPTS['verify_cert']:
             ldap_conn.set_option(ldap.OPT_REFERRALS, 0)
         try:
-            if SERVER_OPTS['ldap_type'] == 'openldap' and SERVER_OPTS['ldap_base_dn'] is not None:
-                ldap_conn.bind_s("uid=" + re.sub(r'\s*@.*', '', realname) + "," + SERVER_OPTS['ldap_base_dn'], password)
+            if SERVER_OPTS['ldap_type'] == 'openldap' and SERVER_OPTS['ldap_base_dn'] is not None and ('dc=' + realname.split('@')[1].replace('.',',dc=')) == SERVER_OPTS['ldap_base_dn']:
+                ldap_conn.bind_s("uid=" + re.sub(r'\s*@.*', '', realname) + "," + SERVER_OPTS['ldap_user_dn'], password)
             else:
                 ldap_conn.bind_s(realname, password)
         except Exception as e:
@@ -190,7 +191,7 @@ def ldap_authentification(admin=False):
         if admin:
             if SERVER_OPTS['ldap_member_field_filter'] is not None and SERVER_OPTS['ldap_type'] == 'openldap':
                 memberof_admin_list = ldap_conn.search_s(
-                    SERVER_OPTS['ldap_base_dn'],
+                    SERVER_OPTS['ldap_user_dn'],
                     SCOPE_SUBTREE,
                     filterstr='(&(%s=%s)(%s))' % (
                         SERVER_OPTS['filterstr'],
